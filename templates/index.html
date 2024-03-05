@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Projet Web</title>
+</head>
+<body>
+    <form class = "grid" action="/result" method="GET">
+        <div>
+        {% if products is not none %}
+        <h3 style="color: blue;">Voici la liste des produits : <br>{{products}}</h3>
+        {% endif %}
+        </div>
+        <div>
+            <button id="button-get">Récuperer inventaire</button>
+        </div>
+
+    </form>
+
+</body>
+</html>
