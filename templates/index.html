@@ -14,8 +14,20 @@
         <div>
             <button id="button-get">Récuperer inventaire</button>
         </div>
-
     </form>
-
+    <form action="/order/{{order_id}}" method="post">
+        <select name="choix">
+            {% for item in products %}
+            <option name="item" value="{{ item }}">{{ item.name }}</option>
+            {% endfor %}
+        </select>
+        <div>
+            <label for="input_quantite"></label><input type="text" id="input_quantite" name="quantite" value="{{ quantite }}">
+        </div>
+        <input type="submit" value="Envoyer Commande">
+    </form>
+    <div>
+        <h1>{{ order_id }}</h1>
+    </div>
 </body>
 </html>

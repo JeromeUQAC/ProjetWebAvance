@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Projet Web</title>
+</head>
+<body>
+<div>
+    <h1>Commande numéro : {{ order_id }}</h1>
+    <form action="/order/{{order_id}}" method="post">
+        <input type="hidden" name="method" value="PUT">
+        <label for="input_email"></label><input type="text" id="input_email" name="email" placeholder="email" value="{{ email }}"><br>
+        <label for="input_country"></label><input type="text" id="input_country" name="country" placeholder="country" value="{{ country }}"><br>
+        <label for="input_address"></label><input type="text" id="input_address" name="address" placeholder="address" value="{{ address }}"><br>
+        <label for="input_postal_code"></label><input type="text" id="input_postal_code" name="postal_code" placeholder="postal code" value="{{ postal_code }}"><br>
+        <label for="input_city"></label><input type="text" id="input_city" name="city" placeholder="city" value="{{ city }}"><br>
+        <label for="input_province"></label><input type="text" id="input_province" name="province" placeholder="province" value="{{ province }}"><br>
+        <input type="submit" value="Envoyer Commande">
+    </form>
+</div>
+</body>
+</html>
