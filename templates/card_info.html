@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Projet Web</title>
+</head>
+<body>
+    <div>
+        <h1>Commande numéro : {{ order_id }}</h1>
+        <form action="/order/{{order_id}}/card_info" method="post">
+            <input type="hidden" name="method" value="PUT">
+            <label for="input_name"></label><input type="text" id="input_name" name="name" placeholder="Name" value="{{ name }}"><br>
+            <label for="input_number"></label><input type="text" id="input_number" name="number" placeholder="Card Number" value="{{ number }}"><br>
+            <label for="input_exp_year"></label><input type="text" id="input_exp_year" name="exp_year" placeholder="Expiration Year" value="{{ exp_year }}"><br>
+            <label for="input_exp_month"></label><input type="text" id="input_exp_month" name="exp_month" placeholder="Expiration Month" value="{{ exp_month }}"><br>
+            <label for="input_cvv"></label><input type="text" id="input_cvv" name="cvv" placeholder="CVV" value="{{ cvv }}"><br>
+            <input type="submit" value="Envoyer Commande">
+        </form>
+    </div>
+</body>
+</html>

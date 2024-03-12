@@ -114,8 +114,8 @@ def get_products():
     return render_template("index.html", products=products_list)
 
 
-@app.route("/order/<int:order_id>", methods=['GET', 'POST'])
-def initialize_order(order_id):
+@app.route("/order", methods=['GET', 'POST'])
+def initialize_order():
     if request.method == 'POST':
         id_item = None
         for produit in products_list:
@@ -127,6 +127,7 @@ def initialize_order(order_id):
         print("type : " + str(type(order)))
         print("id : " + str(order['product']['id']))
         print("quantity : " + str(order['product']['quantity']))
+        order_id = None
         if CommandDb.select(fn.Max(CommandDb.command_id)).scalar() is None:
             order_id = 1
         else:
@@ -148,11 +149,68 @@ def make_order(order_id):
         print("SHIPPING INFO : " + str(shipping_info))
         method = shipping_info["method"]
         input_email = shipping_info["email"]
-        input_contry = shipping_info["country"]
+        input_country = shipping_info["country"]
         input_address = shipping_info["address"]
         input_postal_code = shipping_info["postal_code"]
         input_city = shipping_info["city"]
         input_province = shipping_info["province"]
+
+        command = CommandDb.get_or_none(order_id)
+        if command is not None:
+            command.command_email = input_email
+            command.command_country = input_country
+            command.command_address = input_address
+            command.command_postal_code = input_postal_code
+            command.command_city = input_city
+            command.command_province = input_province
+            command.save()
+
+    return render_template("card_info.html", order_id=order_id)
+
+
+@app.route("/order/<int:order_id>/card_info", methods=['GET', 'POST'])
+def order_details(order_id):
+    if request.method == 'POST':
+        card_info = request.form.to_dict()
+        print("Card info : " + str(card_info))
+        input_name = card_info["name"]
+        input_number = card_info["number"]
+        input_exp_year = card_info["exp_year"]
+        input_exp_month = card_info["exp_month"]
+        input_cvv = card_info["cvv"]
+        card_info_to_send = {
+            "credit_card": {
+                "name": input_name,
+                "number": input_number,
+                "exiration_year": input_exp_year,
+                "cvv": input_cvv,
+                "expiration_month": input_exp_month
+            }
+        }
+        card_info_to_send = json.dumps(card_info_to_send)
+        print(str(type(card_info_to_send)))
+        with urlopen("http://dimprojetu.uqac.ca/~jgnault/shops/pay/", card_info_to_send) as response:
+            json_response = json.loads(response.read())
+        print(json_response)
+        '''
+        order = CommandDb.get_or_none(order_id)
+        item = ProductDb.get_or_none(order.command_product_id)
+
+        command_to_send = {
+            "order": {
+                "shipping_info": {
+                    "country": order.command_country,
+                    "address": order.command_address,
+                    "postal_code": order.command_postal_code,
+                    "city": order.command_city,
+                    "province": order.command_province
+                },
+                "email": order.command_email,
+                "total_price": order.command_quantity * item.product_price,
+                "paid" : Bo
+            }
+        }
+        '''
 
 
 if __name__ == '__main__':
