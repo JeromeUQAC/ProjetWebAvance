@@ -133,6 +133,7 @@ def make_order(order_id):
 
 @app.route("/order/<int:order_id>/resume/", methods=['GET', 'POST'])
 def order_details(order_id):
+    command_summary = None
     if request.method == 'POST':
         order = CommandDb.get_or_none(order_id)
         item = ProductDb.get_or_none(order.command_product_id)
@@ -196,7 +197,7 @@ def order_details(order_id):
                         "province": order.command_province
                     },
                     "email": order.command_email,
-                    "total_price": order.command_quantity * item.product_price,
+                    "total_price": order.command_quantity * int(item.product_price),
                     "paid": order.command_paid,
                     "product": {
                         "id": item.product_id,
@@ -222,7 +223,7 @@ def order_details(order_id):
         else:
             error = make_response(validation["http_name"] + " (" + validation["code"] + ") : " + validation["name"])
             abort(error)
-    return render_template("confirmation.html")
+    return render_template("confirmation.html", command_summary=command_summary)
 
 
 database.close()

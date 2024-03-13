@@ -3,18 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <title>Projet Web</title>
+    <link rel="stylesheet" type="text/css" href="../static/style.css">
 </head>
 <body>
     <form action="/order/{{order_id}}/shipping/" method="post">
-        <select name="choix">
-            {% for item in products %}
-            <option name="item" value="{{ item }}">{{ item.name }}</option>
-            {% endfor %}
-        </select>
-        <div>
-            <label for="input_quantite"></label><input type="text" id="input_quantite" name="quantite" value="{{ quantite }}">
+        <div id = "div-page-accueil">
+            <select name="choix" id = "select-items">
+                {% for item in products %}
+                <option name="item" value="{{ item }}" class = "option">{{ item.name }}</option>
+                {% endfor %}
+            </select>
         </div>
-        <input type="submit" value="Envoyer Commande">
+        <div>
+            <label for="input_quantite" id = "label-quantite">Entrer la quantité ici</label>
+            <input type="text" id="input_quantite" name="quantite" value="{{ quantite }}" placeholder="ex : 5">
+        </div>
+        <input type="submit" value="Générer la commande" id = "bouton-generer-commande">
     </form>
 </body>
 </html>

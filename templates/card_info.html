@@ -3,19 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <title>Projet Web</title>
+    <link rel="stylesheet" type="text/css" href="../../../static/style.css">
 </head>
 <body>
     <div>
         <h1>Commande numéro : {{ order_id }}</h1>
-        <form action="/order/{{order_id}}/resume/" method="post">
-            <input type="hidden" name="method" value="PUT">
-            <label for="input_name"></label><input type="text" id="input_name" name="name" placeholder="Name" value="{{ name }}"><br>
-            <label for="input_number"></label><input type="text" id="input_number" name="number" placeholder="Card Number" value="{{ number }}"><br>
-            <label for="input_exp_year"></label><input type="text" id="input_exp_year" name="exp_year" placeholder="Expiration Year" value="{{ exp_year }}"><br>
-            <label for="input_exp_month"></label><input type="text" id="input_exp_month" name="exp_month" placeholder="Expiration Month" value="{{ exp_month }}"><br>
-            <label for="input_cvv"></label><input type="text" id="input_cvv" name="cvv" placeholder="CVV" value="{{ cvv }}"><br>
-            <input type="submit" value="Envoyer Commande">
-        </form>
+        <div id = "div-page-carte-credit">
+            <form action="/order/{{order_id}}/resume/" method="post">
+                <input type="hidden" name="method" value="PUT">
+                <label for="input_name" class = "labels-carte"></label><input type="text" id="input_name" name="name" placeholder="Name" value="{{ name }}" class = "inputs-carte"><br>
+                <label for="input_number" class = "labels-carte"></label><input type="text" id="input_number" name="number" placeholder="Card Number" value="{{ number }}" class = "inputs-carte"><br>
+                <label for="input_exp_year" class = "labels-carte"></label><input type="text" id="input_exp_year" name="exp_year" placeholder="Expiration Year" value="{{ exp_year }}" class = "inputs-carte"><br>
+                <label for="input_exp_month" class = "labels-carte"></label><input type="text" id="input_exp_month" name="exp_month" placeholder="Expiration Month" value="{{ exp_month }}" class = "inputs-carte"><br>
+                <label for="input_cvv" class = "labels-carte"></label><input type="text" id="input_cvv" name="cvv" placeholder="CVV" value="{{ cvv }}" class = "inputs-carte"><br>
+                <input type="submit" value="Confirmer les informations de la carte de crédit" id = "bouton-confirmer-carte">
+            </form>
+        </div>
     </div>
 </body>
 </html>

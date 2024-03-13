@@ -3,14 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <title>Projet Web</title>
+    <link rel="stylesheet" type="text/css" href="../../../static/style.css">
 </head>
 <body>
+    <h1>Commande {{ order_id }} effectuée avec succès !</h1>
     <div>
-        <h1>Commande {{ order_id }} éffectuée avec succès !</h1>
-    </div>
-    <div>
-        <h2>Récapitulatif de la commande :</h2>
-
+        <h1>Récapitulatif de la commande :</h1>
+        <div id="div-page-resume">
+            <label class = "labels-titre-categorie">Résumé</label>
+            <div id = "div-infos-commande">
+                <label class = "labels-categorie">Aliment choisi : </label><label class = "labels-user">{{ command_summary.order.product.id }}</label>
+                <br><label class = "labels-categorie">Quantité : </label><label class = "labels-user">{{ command_summary.order.product.quantity }}</label>
+            </div>
+            <label class = "labels-titre-categorie">Shipping</label>
+            <div id = "div-infos-shipping">
+                <label class = "labels-categorie">Pays : </label><label class = "labels-user">{{ command_summary.order.shipping_info.country }}</label>
+                <br><label class = "labels-categorie">Adresse : </label><label class = "labels-user">{{ command_summary.order.shipping_info.adress }}</label>
+                <br><label class = "labels-categorie">Code postal : </label><label class = "labels-user">{{ command_summary.order.shipping_info.postal_code }}</label>
+                <br><label class = "labels-categorie">Ville : </label><label class = "labels-user">{{ command_summary.order.shipping_info.city }}</label>
+                <br><label class = "labels-categorie">Province : </label><label class = "labels-user">{{ command_summary.order.shipping_info.province }}</label>
+                <br><label class = "labels-categorie">Email : </label><label class = "labels-user">{{ command_summary.order.email }}</label>
+            </div>
+            <label class = "labels-titre-categorie">Carte de crédit</label>
+            <div id = "div-infos-carte-credit">
+                <label class = "labels-categorie">Nom complet: </label><label class = "labels-user">{{ command_summary.order.credit_card.name }}</label>
+                <br><label class = "labels-categorie">Numero de carte : </label><label class = "labels-user">**** **** **** {{ command_summary.order.credit_card.last_digits }}</label>
+                <br><label class = "labels-categorie">Année d'expiration : </label><label class = "labels-user">{{ command_summary.order.credit_card.expiration_year }}</label>
+                <br><label class = "labels-categorie">Mois d'expiration : </label><label class = "labels-user">{{ command_summary.order.credit_card.expiration_month }}</label>
+            </div>
+            <label class = "labels-titre-categorie">Paiement</label>
+            <div id = "div-infos-couts">
+               <label class = "labels-categorie">Total partiel (Sans shipping): </label><label class = "labels-user">{{ command_summary.order.total_price }}</label>
+               <br><label class = "labels-categorie">Coût du shipping: </label><label class = "labels-user">{{ command_summary.order.shipping_price}}</label>
+               <br><label class = "labels-categorie">Total (Avec shipping): </label><label class = "labels-user">{{ command_summary.order.transaction.amount_charged }}</label>
+            </div>
+      </div>
     </div>
 </body>
 </html>
