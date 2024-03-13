@@ -7,7 +7,7 @@
 <body>
 <div>
     <h1>Commande numéro : {{ order_id }}</h1>
-    <form action="/order/{{order_id}}" method="post">
+    <form action="/order/{{order_id}}/card_info/" method="post">
         <input type="hidden" name="method" value="PUT">
         <label for="input_email"></label><input type="text" id="input_email" name="email" placeholder="email" value="{{ email }}"><br>
         <label for="input_country"></label><input type="text" id="input_country" name="country" placeholder="country" value="{{ country }}"><br>

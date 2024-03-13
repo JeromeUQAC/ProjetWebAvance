@@ -7,7 +7,7 @@
 <body>
     <div>
         <h1>Commande numéro : {{ order_id }}</h1>
-        <form action="/order/{{order_id}}/card_info" method="post">
+        <form action="/order/{{order_id}}/resume/" method="post">
             <input type="hidden" name="method" value="PUT">
             <label for="input_name"></label><input type="text" id="input_name" name="name" placeholder="Name" value="{{ name }}"><br>
             <label for="input_number"></label><input type="text" id="input_number" name="number" placeholder="Card Number" value="{{ number }}"><br>

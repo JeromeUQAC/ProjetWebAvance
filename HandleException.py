@@ -1,61 +1,91 @@
+from database import database, CommandDb, ProductDb
+import datetime
+import re
+import json
+
+database.connect()
+
+
 def handle_exception(http_code, http_name, code, name):
-    response = e.get_response()
-    response.date = json.dumps({
+    response = json.dumps({
         "http_code": http_code,
         "http_name": http_name,
         "code": code,
         "name": name,
     })
-    response.content_type = "application/json"
     return response
 
 
 #   1 si id / quantity / product est vide
 def product_validation(product):
-    if product.id is None or product.quantity is None or object is None:
-        handle_exception(422, "UnprocessableEntity", "missing-fields", "La création d'une commande nécéssite un produit")
+    if product is None or product.quantite is None or product.quantite < 1:
+        response = handle_exception(422, "UnprocessableEntity", "missing-fields", "La création d'une commande nécéssite un produit")
 
     #   2 si le truc est en stock
-    if not product_id.in_stock:
-        handle_exception(422, "UnprocessableEntity", "out-of-inventory", "Le produit demandé n'est pas en inventaire")
+    elif ProductDb.get_or_none(product.id).product_in_stock == 0:
+        response = handle_exception(422, "UnprocessableEntity", "out-of-inventory", "Le produit demandé n'est pas en inventaire")
 
+    else:
+        response = handle_exception(200, "NOPROPLEM", "no-problem", "200 OK")
+    return response
+
+
+def order_validation(order_id, shipping_info):
     #   3 si commande n'existe pas
-    handle_exception(404, "NotFound", "inexisting-command", "La commande n'existe pas")
+    if CommandDb.get_or_none(order_id) is None:
+        response = handle_exception(404, "NotFound", "inexisting-command", "La commande n'existe pas")
 
     #   4 si manque des champs obligatoires shipping
-    if (emails is None) or (shipping is None) or (shipping_information.country is None) or (
-            shipping_information.postal_code is None) or (shipping_information.city is None) or (
-            shipping_information.state.province is None):
-        handle_exception(422, "UnprocessableEntity", "missing-fields", "Il manque un ou plusieurs champs qui sont obligatoires")
+    elif ((shipping_info["email"] == "") or (shipping_info["address"] == "") or (shipping_info["country"] == "")
+          or (shipping_info["postal_code"] == "") or (shipping_info["city"] == "") or (shipping_info["province"] == "")):
+        response = handle_exception(422, "UnprocessableEntity", "missing-fields", "Il manque un ou plusieurs champs qui sont obligatoires")
+    else:
+        response = handle_exception(200, "NOPROPLEM", "no-problem", "200 OK")
+    return response
 
 
-#   5 - 6 - 7 - 8
-def validation_carte(numero, exp_annee, exp_mois, cvv, id):
+    #   5 - 6 - 7 - 8
+def validation_carte(nom, numero, exp_annee, exp_mois, cvv, order_id):
+    regex_carte = r'^(?:\d{4} ){3}\d{4}$'
+    regex_cvv = r'^\d{3}$'
+    if exp_annee == "":
+        exp_annee = 0
+    if exp_mois == "":
+        exp_mois = 0
     carte_ok = False
     date_ok = False
+    nom_ok = False
     cvv_ok = False
-    id_ok = id  # Initiliser selon si la commande est déjà payée #Commande.paid
+    today = datetime.date.today()
+    print("Today : " + str(today))
+    print("Today month: " + str(today.month))
+    print("Today year: " + str(today.year))
+    paid = CommandDb.get_or_none(order_id).command_paid
+    response = None
 
-    if id_ok:  ##PUT /order/<int:order_id>
-        handle_exception(422, "UnprocessableEntity", "already-paid", "La commande a déjà été payée")
+    if paid:
+        response = handle_exception(422, "UnprocessableEntity", "already-paid", "La commande a déjà été payée")
 
-    if numero == "4242 4242 4242 4242" or numero == "4000 0000 0000 0002":
+    if re.fullmatch(regex_carte, numero):
         carte_ok = True
-    if exp_annee < 2025 and exp_mois < 13:
+    if exp_annee >= today.year and 13 > exp_mois >= today.month:
         date_ok = True
-    if len(cvv) == 3:
+    if re.fullmatch(regex_cvv, cvv):
         cvv_ok = True
-        try:
-            int(cvv) / 2
-        except ValueError:
-            print("NO")
-            cvv_ok = False
-    if carte_ok and date_ok and cvv_ok:
-        print("ok")
+    if nom != "":
+        nom_ok = True
+    if nom_ok and carte_ok and date_ok and cvv_ok:
+        response = handle_exception(200, "NOPROPLEM", "no-problem", "200 OK")
     else:
-        if numero == "" or exp_annee == "" or exp_mois == "" or cvv == "":
-            handle_exception(422, "UnprocessableEntity", "missing-fields",
+        if not nom_ok or not cvv_ok:
+            response = handle_exception(422, "UnprocessableEntity", "missing-fields",
                              "Les informations du client sont nécéssaires avant d'appliquer une carte de crédit")
-
+        elif not carte_ok:
+            response = handle_exception(422, "UnprocessableEntity", "card_declined","La carte de crédit a été déclinée")
+        elif not date_ok:
+            response = handle_exception(422, "UnprocessableEntity", "card_expired", "La carte de crédit est expirée")
         else:
-            handle_exception(422, "UnprocessableEntity", "already-paid", "La carte de crédit a été déclinée")
+            response = handle_exception(422, "UnprocessableEntity", "card_declined", "La carte de crédit a été déclinée")
+    return response
+
+database.close()
