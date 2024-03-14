@@ -18,7 +18,8 @@ def handle_exception(http_code, http_name, code, name):
 
 #   1 si id / quantity / product est vide
 def product_validation(product):
-    if product is None or product.quantite is None or product.quantite < 1:
+    regex_quantite = r'^\d{1,4}$'
+    if product is None or product.quantite is None or product.quantite < 1 or not re.fullmatch(regex_quantite, str(product.quantite)):
         response = handle_exception(422, "UnprocessableEntity", "missing-fields", "La création d'une commande nécéssite un produit")
 
     #   2 si le truc est en stock
@@ -48,6 +49,8 @@ def order_validation(order_id, shipping_info):
 def validation_carte(nom, numero, exp_annee, exp_mois, cvv, order_id):
     regex_carte = r'^(?:\d{4} ){3}\d{4}$'
     regex_cvv = r'^\d{3}$'
+    regex_annee = r'^\d{4}$'
+    regex_mois = r'^\d{1,2}$'
     if exp_annee == "":
         exp_annee = 0
     if exp_mois == "":
@@ -87,5 +90,6 @@ def validation_carte(nom, numero, exp_annee, exp_mois, cvv, order_id):
         else:
             response = handle_exception(422, "UnprocessableEntity", "card_declined", "La carte de crédit a été déclinée")
     return response
+
 
 database.close()

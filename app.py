@@ -149,14 +149,15 @@ def order_details(order_id):
         print("Card info : " + str(card_info))
         input_name = card_info["name"]
         input_number = card_info["number"]
+        input_exp_year = int(card_info["exp_year"])
+
         if card_info["exp_year"] == "":
             input_exp_year = 0
-        else:
-            input_exp_year = int(card_info["exp_year"])
+
+        input_exp_month = int(card_info["exp_month"])
         if card_info["exp_month"] == "":
             input_exp_month = 0
-        else:
-            input_exp_month = int(card_info["exp_month"])
+
         input_cvv = card_info["cvv"]
 
         validation = json.loads(validation_carte(input_name, input_number, input_exp_year, input_exp_month, input_cvv, order_id))
@@ -201,6 +202,8 @@ def order_details(order_id):
                     "paid": order.command_paid,
                     "product": {
                         "id": item.product_id,
+                        "name": item.product_name,
+                        "description": item.product_desc,
                         "quantity": order.command_quantity
                     },
                     "credit_card": {
