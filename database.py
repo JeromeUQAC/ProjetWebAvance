@@ -1,4 +1,5 @@
 from peewee import *
+import os
 
 database = SqliteDatabase("database.db")
 
@@ -44,6 +45,10 @@ class Relationship(BaseModel):
         indexes = (
             (('from_product', 'to_product'), True),
         )
+
+
+def get_database_location():
+    return os.environ.get("database", "database.db")
 
 
 def create_tables():

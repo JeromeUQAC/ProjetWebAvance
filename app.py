@@ -2,13 +2,16 @@ import random
 import requests
 import json
 from HandleException import *
-from database import database
+from database import database, get_database_location
 from peewee import fn
+import click
 from flask import Flask, render_template, request, redirect, abort, make_response, jsonify
 from urllib.request import urlopen, Request
 from urllib.parse import urlencode
 
 database.connect()
+
+
 
 
 class Product:
@@ -22,6 +25,18 @@ products_list = []
 database.create_tables([ProductDb, CommandDb])
 
 app = Flask(__name__)
+
+
+@click.command("initialisation_bd")
+def initialisation_bd():
+    database_path = get_database_location()
+
+
+def app_initialisation(application):
+    application.cli.add_command(initialisation_bd)
+
+
+app_initialisation(app)
 
 
 def get_order_id():
