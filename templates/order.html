@@ -11,13 +11,13 @@
     <div id = "div-page-shipping">
         <form action="/order/{{order_id}}/card_info/" method="post">
             <input type="hidden" name="method" value="PUT">
-            <label for="input_email" class = "labels-shipping"></label><input type="text" id="input_email" name="email" placeholder="email" value="{{ email }}" class = "inputs-shipping"><br>
-            <label for="input_country" class = "labels-shipping"></label><input type="text" id="input_country" name="country" placeholder="country" value="{{ country }}" class = "inputs-shipping"><br>
-            <label for="input_address" class = "labels-shipping"></label><input type="text" id="input_address" name="address" placeholder="address" value="{{ address }}" class = "inputs-shipping"><br>
-            <label for="input_postal_code" class = "labels-shipping"></label><input type="text" id="input_postal_code" name="postal_code" placeholder="postal code" value="{{ postal_code }}" class = "inputs-shipping"><br>
-            <label for="input_city" class = "labels-shipping"></label><input type="text" id="input_city" name="city" placeholder="city" value="{{ city }}" class = "inputs-shipping"><br>
-            <label for="input_province" class = "labels-shipping"></label><input type="text" id="input_province" name="province" placeholder="province" value="{{ province }}" class = "inputs-shipping"><br>
-            <input type="submit" value="Confirmer les informations de shipping" id = "bouton-confirmer-shipping">
+            <label for="input_email" class = "labels-shipping">Adresse email</label><input type="text" id="input_email" name="email" placeholder="email" value="{{ email }}" class = "inputs-shipping"><br>
+            <label for="input_country" class = "labels-shipping">Pays</label><input type="text" id="input_country" name="country" placeholder="pays" value="{{ country }}" class = "inputs-shipping"><br>
+            <label for="input_address" class = "labels-shipping">Adresse</label><input type="text" id="input_address" name="address" placeholder="adresse" value="{{ address }}" class = "inputs-shipping"><br>
+            <label for="input_postal_code" class = "labels-shipping">Code postal</label><input type="text" id="input_postal_code" name="postal_code" placeholder="code postal" value="{{ postal_code }}" class = "inputs-shipping"><br>
+            <label for="input_city" class = "labels-shipping">Ville</label><input type="text" id="input_city" name="city" placeholder="ville" value="{{ city }}" class = "inputs-shipping"><br>
+            <label for="input_province" class = "labels-shipping">Province</label><input type="text" id="input_province" name="province" placeholder="province" value="{{ province }}" class = "inputs-shipping"><br>
+           <input type="submit" value="Confirmer les informations de shipping" id = "bouton-confirmer-shipping">
         </form>
     </div>
 </div>

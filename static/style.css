@@ -12,7 +12,7 @@ h1 {
 }
 
 #div-page-accueil{
-  width: 20%;
+  width: 15%;
   margin: auto;
 }
 
@@ -31,22 +31,30 @@ h1 {
   margin: auto;
 }
 
+#label-quantite-liste {
+    color: #322880;
+    text-align: center;
+    font-variant: small-caps;
+    font-size: 20px;				 
+}
 
-#label-quantite {
-  color: #322880;
-  text-align: center;
-  font-variant: small-caps;
-  font-size: 20px;
+#label_quantite {
+    color: #322880;
+    text-align: center;
+    font-variant: small-caps;
+    font-size: 20px;
 }
 
 #input-quantite{
   font-size: 15px;
+  margin-top: 10px;
+  color: #7c72c8;
+  margin-bottom: 20px;					 					
 }
 
 #bouton-generer-commande {
     background-color: #ffffff;
     font-size: 20px;
-    margin-top: 10px;
     margin-bottom: 30px;
     font-variant: small-caps;
     color: #322880;
@@ -67,6 +75,8 @@ h1 {
 #select-items{
   font-size: 18px;
   color: #322880;
+  margin-top: 10px;
+  margin-bottom: 50px;					 
 }
 
 #custom-select{
@@ -75,14 +85,15 @@ h1 {
 
 #bouton-confirmer-shipping {
     background-color: #ffffff;
-    font-size: 20px;
+    font-size: 18px;
     margin-bottom: 30px;
     margin-top: 50px;
     font-variant: small-caps;
     color: #322880;
     box-shadow: 0 0 5px 0 rgba(50, 40, 128, 0.25);
-
-    width: 300px;
+    height: 60px;
+    width: 250px;
+    white-space: normal;			
 }
 
 #bouton-confirmer-shipping:hover{
@@ -111,8 +122,9 @@ h1 {
     font-variant: small-caps;
     color: #322880;
     box-shadow: 0 0 5px 0 rgba(50, 40, 128, 0.25);
-
+    height : 60px;
     width: 300px;
+    white-space: normal;		
 }
 
 #bouton-confirmer-carte:hover{

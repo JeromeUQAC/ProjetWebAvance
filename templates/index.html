@@ -8,17 +8,16 @@
 <body>
     <form action="/order/{{order_id}}/shipping/" method="post">
         <div id = "div-page-accueil">
+            <label id = "label-quantite-liste">Liste des aliments</label>
             <select name="choix" id = "select-items">
                 {% for item in products %}
                 <option name="item" value="{{ item }}" class = "option">{{ item.name }}</option>
                 {% endfor %}
             </select>
-        </div>
-        <div>
-            <label for="input_quantite" id = "label-quantite">Entrer la quantité ici</label>
+            <label for="input_quantite" id = "label_quantite">Entrer la quantité ici</label>
             <input type="text" id="input_quantite" name="quantite" value="{{ quantite }}" placeholder="ex : 5">
+            <input type="submit" value="Générer la commande" id = "bouton-generer-commande">																																	   
         </div>
-        <input type="submit" value="Générer la commande" id = "bouton-generer-commande">
     </form>
 </body>
 </html>

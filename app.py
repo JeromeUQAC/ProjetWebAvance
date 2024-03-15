@@ -26,7 +26,6 @@ database.create_tables([ProductDb, CommandDb])
 
 app = Flask(__name__)
 
-
 @click.command("initialisation_bd")
 def initialisation_bd():
     database_path = get_database_location()
@@ -39,12 +38,29 @@ def app_initialisation(application):
 app_initialisation(app)
 
 
+
+
+
+
+def client():
+    app = create_app({"TESTING": True})
+    with app.test_client() as client:
+        yield client
+
+
+
+
+
+
+
+
 def get_order_id():
     if CommandDb.select(fn.Max(CommandDb.command_id)).scalar() is None:
         order_id = 1
     else:
         order_id = CommandDb.select(fn.Max(CommandDb.command_id)).scalar() + 1
     return order_id
+
 
 
 @app.route('/', methods=['GET', 'POST'])
