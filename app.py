@@ -12,8 +12,6 @@ from urllib.parse import urlencode
 database.connect()
 
 
-
-
 class Product:
     def __init__(self, id, quantite):
         self.id = id
