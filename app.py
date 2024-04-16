@@ -20,9 +20,8 @@ class Product:
 
 products_list = []
 
-database.create_tables([ProductDb, CommandDb])
-
 app = Flask(__name__)
+
 
 @click.command("initialisation_bd")
 def initialisation_bd():
@@ -36,20 +35,10 @@ def app_initialisation(application):
 app_initialisation(app)
 
 
-
-
-
-
 def client():
     app = create_app({"TESTING": True})
     with app.test_client() as client:
         yield client
-
-
-
-
-
-
 
 
 def get_order_id():
@@ -60,12 +49,11 @@ def get_order_id():
     return order_id
 
 
-
 @app.route('/', methods=['GET', 'POST'])
 def home():
     with urlopen("http://dimprojetu.uqac.ca/~jgnault/shops/products/") as response:
         products_json = json.loads(response.read())
-        print(str(products_json))
+        # print(str(products_json))
         for product in products_json['products']:
             product_data = {
                 "id": product['id'],
@@ -82,11 +70,15 @@ def home():
             searched_product = ProductDb.get_or_none(product['id'])
             if searched_product is None:
                 #   On ajoute seulement si le produit n'existe pas dans la bd
+                desc = product['description']
+                string_null = "\x00"
+                if string_null in desc:
+                    desc = desc.rstrip(string_null)
                 ProductDb.insert(
                     product_id=product['id'],
                     product_name=product['name'],
                     product_type=product['type'],
-                    product_desc=product['description'],
+                    product_desc=desc,
                     product_image=product['image'],
                     product_weight=product['weight'],
                     product_height=product['height'],
@@ -164,97 +156,102 @@ def make_order(order_id):
 def order_details(order_id):
     command_summary = None
     if request.method == 'POST':
-        order = CommandDb.get_or_none(order_id)
-        item = ProductDb.get_or_none(order.command_product_id)
-        weight = item.product_weight * order.command_quantity
-        expedition_price = 0
-        if weight >= 2000:
-            expedition_price = 25
-        elif 500 <= weight < 2000:
-            expedition_price = 10
-        elif weight < 500:
-            expedition_price = 5
-        card_info = request.form.to_dict()
-        print("Card info : " + str(card_info))
-        input_name = card_info["name"]
-        input_number = card_info["number"]
-        input_exp_year = int(card_info["exp_year"])
+        print("TEST")
+        order = CommandDb.get_or_none(CommandDb.command_id == order_id)
+        if order:
+            print("ORDER : " + str(order))
+            product_id = order.command_product_id
+            print("Product_id : " + str(product_id))
+            item = ProductDb.get_or_none(ProductDb.id == product_id)
+            if item:
+                print("ITEM : " + str(item))
+                weight = item.product_weight * order.command_quantity
+                expedition_price = 0
+                if weight >= 2000:
+                    expedition_price = 25
+                elif 500 <= weight < 2000:
+                    expedition_price = 10
+                elif weight < 500:
+                    expedition_price = 5
+                card_info = request.form.to_dict()
+                print("Card info : " + str(card_info))
+                input_name = card_info["name"]
+                input_number = card_info["number"]
+                input_exp_year = int(card_info["exp_year"])
 
-        if card_info["exp_year"] == "":
-            input_exp_year = 0
+                if card_info["exp_year"] == "":
+                    input_exp_year = 0
 
-        input_exp_month = int(card_info["exp_month"])
-        if card_info["exp_month"] == "":
-            input_exp_month = 0
+                input_exp_month = int(card_info["exp_month"])
+                if card_info["exp_month"] == "":
+                    input_exp_month = 0
 
-        input_cvv = card_info["cvv"]
+                input_cvv = card_info["cvv"]
 
-        validation = json.loads(validation_carte(input_name, input_number, input_exp_year, input_exp_month, input_cvv, order_id))
-        if validation["http_code"] == 200:
-            card_info_to_send = {
-                "credit_card": {
-                    "name": input_name,
-                    "number": input_number,
-                    "expiration_year": input_exp_year,
-                    "cvv": input_cvv,
-                    "expiration_month": input_exp_month
-                },
-                "amount_charged": int((order.command_quantity * item.product_price) + expedition_price)
-            }
+                validation = json.loads(validation_carte(input_name, input_number, input_exp_year, input_exp_month, input_cvv, order_id))
+                if validation["http_code"] == 200:
+                    card_info_to_send = {
+                        "credit_card": {
+                            "name": input_name,
+                            "number": input_number,
+                            "expiration_year": input_exp_year,
+                            "cvv": input_cvv,
+                            "expiration_month": input_exp_month
+                        },
+                        "amount_charged": int((order.command_quantity * item.product_price) + expedition_price)
+                    }
 
-            print(str(card_info_to_send))
-            url = "http://dimprojetu.uqac.ca/~jgnault/shops/pay/"
-            headers = {"Content-Type": "application/json"}
-            response = requests.post(url, json=card_info_to_send, headers=headers).text
-            response_json = json.loads(response)
-            print(str(response_json))
-            order = CommandDb.get_or_none(order_id)
-            if order is not None:
-                order.command_paid = True
-                order.command_amount_charged = response_json["transaction"]["amount_charged"]
-                order.command_transaction_id = response_json["transaction"]["id"]
-                order.command_transaction_success = response_json["transaction"]["success"]
-                order.save()
-            item = ProductDb.get_or_none(order.command_product_id)
+                    print(str(card_info_to_send))
+                    url = "http://dimprojetu.uqac.ca/~jgnault/shops/pay/"
+                    headers = {"Content-Type": "application/json"}
+                    response = requests.post(url, json=card_info_to_send, headers=headers).text
+                    response_json = json.loads(response)
+                    print(str(response_json))
+                    order = CommandDb.get_or_none(order_id)
+                    order.command_paid = True
+                    order.command_amount_charged = response_json["transaction"]["amount_charged"]
+                    order.command_transaction_id = response_json["transaction"]["id"]
+                    order.command_transaction_success = response_json["transaction"]["success"]
+                    order.save()
 
-            command_summary = {
-                "order": {
-                    "shipping_info": {
-                        "country": order.command_country,
-                        "address": order.command_address,
-                        "postal_code": order.command_postal_code,
-                        "city": order.command_city,
-                        "province": order.command_province
-                    },
-                    "email": order.command_email,
-                    "total_price": order.command_quantity * int(item.product_price),
-                    "paid": order.command_paid,
-                    "product": {
-                        "id": item.product_id,
-                        "name": item.product_name,
-                        "description": item.product_desc,
-                        "quantity": order.command_quantity
-                    },
-                    "credit_card": {
-                        "name": response_json["credit_card"]["name"],
-                        "first_digits": response_json["credit_card"]["first_digits"],
-                        "last_digits": response_json["credit_card"]["last_digits"],
-                        "expiration_year": response_json["credit_card"]["expiration_year"],
-                        "expiration_month": response_json["credit_card"]["expiration_month"]
-                    },
-                    "transaction": {
-                        "id": order.command_transaction_id,
-                        "success": order.command_transaction_success,
-                        "amount_charged": order.command_amount_charged
-                    },
-                    "shipping_price": expedition_price,
-                    "id": order_id
-                }
-            }
-            print(str(command_summary))
-        else:
-            error = make_response(validation["http_name"] + " (" + validation["code"] + ") : " + validation["name"])
-            abort(error)
+                    command_summary = {
+                        "order": {
+                            "shipping_info": {
+                                "country": order.command_country,
+                                "address": order.command_address,
+                                "postal_code": order.command_postal_code,
+                                "city": order.command_city,
+                                "province": order.command_province
+                            },
+                            "email": order.command_email,
+                            "total_price": order.command_quantity * int(item.product_price),
+                            "paid": order.command_paid,
+                            "product": {
+                                "id": item.product_id,
+                                "name": item.product_name,
+                                "description": item.product_desc,
+                                "quantity": order.command_quantity
+                            },
+                            "credit_card": {
+                                "name": response_json["credit_card"]["name"],
+                                "first_digits": response_json["credit_card"]["first_digits"],
+                                "last_digits": response_json["credit_card"]["last_digits"],
+                                "expiration_year": response_json["credit_card"]["expiration_year"],
+                                "expiration_month": response_json["credit_card"]["expiration_month"]
+                            },
+                            "transaction": {
+                                "id": order.command_transaction_id,
+                                "success": order.command_transaction_success,
+                                "amount_charged": order.command_amount_charged
+                            },
+                            "shipping_price": expedition_price,
+                            "id": order_id
+                        }
+                    }
+                    print(str(command_summary))
+                else:
+                    error = make_response(validation["http_name"] + " (" + validation["code"] + ") : " + validation["name"])
+                    abort(error)
     return render_template("confirmation.html", command_summary=command_summary)
 
 

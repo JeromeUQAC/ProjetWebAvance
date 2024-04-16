@@ -1,7 +1,8 @@
 from peewee import *
 import os
+import psycopg2
 
-database = SqliteDatabase("database.db")
+database = PostgresqlDatabase(os.environ.get("DB_NAME"), host=os.environ.get("DB_HOST"), port=os.environ.get("DB_PORT"), user=os.environ.get("DB_USER"), password=os.environ.get("DB_PASSWORD"))
 
 
 class BaseModel(Model):
@@ -11,14 +12,14 @@ class BaseModel(Model):
 
 class ProductDb(BaseModel):
     product_id = IntegerField(unique=True)
-    product_name = CharField()
-    product_type = CharField()
-    product_in_stock = BooleanField()
-    product_desc = CharField()
-    product_price = FloatField()
-    product_height = FloatField()
-    product_weight = FloatField()
-    product_image = CharField()
+    product_name = CharField(null=True)
+    product_type = CharField(null=True)
+    product_in_stock = BooleanField(null=True)
+    product_desc = CharField(null=True)
+    product_price = FloatField(null=True)
+    product_height = FloatField(null=True)
+    product_weight = FloatField(null=True)
+    product_image = CharField(null=True)
 
 
 class CommandDb(BaseModel):
@@ -48,9 +49,10 @@ class Relationship(BaseModel):
 
 
 def get_database_location():
-    return os.environ.get("database", "database.db")
+    print("init-db")
+    create_tables()
 
 
 def create_tables():
     with database:
-        database.create_tables([ProductDb, CommandDb, Relationship])
+        database.create_tables([ProductDb, CommandDb])
