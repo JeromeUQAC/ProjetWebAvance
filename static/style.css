@@ -200,3 +200,18 @@ h1 {
   font-size: 25px;
   font-variant: small-caps;
 }
+
+#ligne{
+    width: 50%;
+    display: flex;
+    align-content: center;
+    alignment: center;
+    align-items: center;
+}
+#element-ligne{
+    margin-right: 20px;
+}
+
+#order_size{
+    display: none;
+}

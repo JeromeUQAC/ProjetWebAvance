@@ -1,8 +1,9 @@
 from peewee import *
+from playhouse.postgres_ext import *
 import os
 import psycopg2
 
-database = PostgresqlDatabase(os.environ.get("DB_NAME"), host=os.environ.get("DB_HOST"), port=os.environ.get("DB_PORT"), user=os.environ.get("DB_USER"), password=os.environ.get("DB_PASSWORD"))
+database = PostgresqlExtDatabase(database=os.environ.get("DB_NAME"), host=os.environ.get("DB_HOST"), port=os.environ.get("DB_PORT"), user=os.environ.get("DB_USER"), password=os.environ.get("DB_PASSWORD"))
 
 
 class BaseModel(Model):
@@ -24,8 +25,7 @@ class ProductDb(BaseModel):
 
 class CommandDb(BaseModel):
     command_id = AutoField(unique=True)
-    command_product_id = ForeignKeyField(ProductDb, backref='product_id')
-    command_quantity = IntegerField()
+    command = BinaryJSONField(null=False)
     command_email = CharField(null=True)
     command_country = CharField(null=True)
     command_address = CharField(null=True)

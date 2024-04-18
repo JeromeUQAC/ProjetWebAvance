@@ -53,7 +53,6 @@ def get_order_id():
 def home():
     with urlopen("http://dimprojetu.uqac.ca/~jgnault/shops/products/") as response:
         products_json = json.loads(response.read())
-        # print(str(products_json))
         for product in products_json['products']:
             product_data = {
                 "id": product['id'],
@@ -85,39 +84,38 @@ def home():
                     product_price=product['price'],
                     product_in_stock=product['in_stock']
                 ).execute()
-    return render_template("index.html", products=products_list, order_id=get_order_id())
+    return render_template("index.html", products=products_list, order_id=get_order_id(), order_size=0)
 
 
 @app.route("/order/<int:order_id>/shipping/", methods=['GET', 'POST'])
 def initialize_order(order_id):
     if request.method == 'POST':
-        id_item = None
-        for produit in products_list:
-            if produit['id'] == eval(request.form.get('choix'))['id']:
-                id_item = produit['id']
-        quantity = request.form.get('quantite')
-        print("quantity : " + quantity)
-        if quantity == "":
-            quantity = 0
-        product = Product(id_item, int(quantity))
-        validation = json.loads(product_validation(product))
-        if validation["http_code"] == 200:
-            print(str(validation))
-            order = {"product": {"id": product.id, "quantity": product.quantite}}
-            print("Commande : " + str(order))
-            print("type : " + str(type(order)))
-            print("id : " + str(order['product']['id']))
-            print("quantity : " + str(order['product']['quantity']))
-            order_id = get_order_id()
-            print("next value : " + str(order_id))
-            CommandDb.insert(
-                command_id=order_id,
-                command_product_id=order['product']['id'],
-                command_quantity=order['product']['quantity']
-            ).execute()
-        else:
-            error = make_response(validation["http_name"] + " (" + validation["code"] + ") : " + validation["name"])
-            abort(error)
+        order_size = request.form.get("order_size")
+        print("order_size: " + str(order_size))
+        products = []
+        for x in range(1, int(order_size) + 1):
+            item = request.form.get("input-item" + str(x))
+            for product in products_list:
+                if product['name'] == item:
+                    item_id = product['id']
+            quantity = request.form.get("input-quantite" + str(x))
+            product = Product(int(item_id), int(quantity))
+            validation = json.loads(product_validation(product))
+            if validation["http_code"] == 200:
+                print(str(validation))
+                print("product : " + str(product))
+                products.append(product)
+            else:
+                error = make_response(validation["http_name"] + " (" + validation["code"] + ") : " + validation["name"])
+                abort(error)
+        command = "{order: {"
+        for p in products:
+            command = command + "product: {id:" + str(p.id) + ", quantity:" + str(p.quantite) + "}, "
+        command = command + "}}"
+        print("command : " + str(command))
+        CommandDb.insert(
+            command_id=order_id,
+            command=command).execute()
     return render_template("order.html", order_id=order_id)
 
 
@@ -156,22 +154,31 @@ def make_order(order_id):
 def order_details(order_id):
     command_summary = None
     if request.method == 'POST':
-        print("TEST")
-        order = CommandDb.get_or_none(CommandDb.command_id == order_id)
+        weightTot = 0
+        costTot = 0
+        order = CommandDb.get_or_none(CommandDb.command_id == order_id).command
         if order:
-            print("ORDER : " + str(order))
-            product_id = order.command_product_id
-            print("Product_id : " + str(product_id))
-            item = ProductDb.get_or_none(ProductDb.id == product_id)
+            print("order : " + str(order))
+            print("order type : " + str(type(order)))
+            item = None
+            for p in order["order"]:
+                pid = p["id"]
+                p_quantity = p["quantity"]
+                item = ProductDb.get_or_none(ProductDb.product_id == pid)
+
+                if item:
+                    p_cost = prod.product_price
+                    costTot = costTot + p_cost
+                    weight = item.product_weight * p_quantity
+                    weightTot = weightTot + weight
+
             if item:
-                print("ITEM : " + str(item))
-                weight = item.product_weight * order.command_quantity
                 expedition_price = 0
-                if weight >= 2000:
+                if weightTot >= 2000:
                     expedition_price = 25
-                elif 500 <= weight < 2000:
+                elif 500 <= weightTot < 2000:
                     expedition_price = 10
-                elif weight < 500:
+                elif weightTot < 500:
                     expedition_price = 5
                 card_info = request.form.to_dict()
                 print("Card info : " + str(card_info))
@@ -198,7 +205,7 @@ def order_details(order_id):
                             "cvv": input_cvv,
                             "expiration_month": input_exp_month
                         },
-                        "amount_charged": int((order.command_quantity * item.product_price) + expedition_price)
+                        "amount_charged": int(costTot + expedition_price)
                     }
 
                     print(str(card_info_to_send))
@@ -224,7 +231,7 @@ def order_details(order_id):
                                 "province": order.command_province
                             },
                             "email": order.command_email,
-                            "total_price": order.command_quantity * int(item.product_price),
+                            "total_price": costTot,
                             "paid": order.command_paid,
                             "product": {
                                 "id": item.product_id,

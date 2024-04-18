@@ -9,15 +9,64 @@
     <form action="/order/{{order_id}}/shipping/" method="post">
         <div id = "div-page-accueil">
             <label id = "label-quantite-liste">Liste des aliments</label>
-            <select name="choix" id = "select-items">
+            <select id = "select-items" onchange="ajouterLigne()">
                 {% for item in products %}
-                <option name="item" value="{{ item }}" class = "option">{{ item.name }}</option>
+                <option id="item-choisi" name="{{ item.name }}" value="{{ item.id }}" class = "option">{{ item.name }}</option>
                 {% endfor %}
             </select>
-            <label for="input_quantite" id = "label_quantite">Entrer la quantité ici</label>
-            <input type="text" id="input_quantite" name="quantite" value="{{ quantite }}" placeholder="ex : 5">
+            <div id="container-ligne"></div>
             <input type="submit" value="Générer la commande" id = "bouton-generer-commande">																																	   
         </div>
+        <input name="order_size" id="order_size" type="number">
     </form>
+
+<script>
+    let order_size = '{{ order_size }}';
+
+    function supprimerLigne(button) {
+        const ligne = button.parentNode;
+        ligne.remove();
+        order_size--;
+        document.getElementById("order_size").value = order_size;
+    }
+    function ajouterLigne() {
+        order_size++;
+        document.getElementById("order_size").value = order_size;
+        const itemSelectionnee = document.getElementById("select-items");
+        const optionSelectionne = itemSelectionnee.options[itemSelectionnee.selectedIndex];
+        const nom = optionSelectionne.textContent
+        const division = document.getElementById("container-ligne");
+        const nouvelElement = document.createElement("div")
+        nouvelElement.classList.add('element-ligne');
+        let label_item = "label-item-" + order_size;
+        const inputItem = document.createElement("input");
+        inputItem.setAttribute('id', label_item);
+        inputItem.setAttribute('name', 'input-item' + order_size);
+        inputItem.setAttribute('type', 'text');
+        inputItem.readOnly = true;
+        inputItem.value = nom; // Texte du label
+
+        const inputQuantite = document.createElement('input');
+        inputQuantite.setAttribute('type', 'number');
+        inputQuantite.setAttribute('id', 'input-quantite-' + order_size);
+        inputQuantite.setAttribute('name', 'input-quantite' + order_size);
+        inputQuantite.setAttribute('min', '1');
+        inputQuantite.setAttribute('placeholder', 'ex : 5');
+
+        const boutonSupprimer = document.createElement('button');
+        boutonSupprimer.classList.add('element-ligne'); // Ajouter la classe "element-ligne"
+        boutonSupprimer.textContent = 'Supprimer';
+        boutonSupprimer.onclick = function() {
+            supprimerLigne(this); // Appeler la fonction supprimerLigne avec le bouton comme argument
+        };
+
+        // Ajouter les éléments à la div parent
+        nouvelElement.appendChild(inputItem);
+        nouvelElement.appendChild(inputQuantite);
+        nouvelElement.appendChild(boutonSupprimer);
+
+        division.append(nouvelElement);
+    }
+</script>
 </body>
 </html>

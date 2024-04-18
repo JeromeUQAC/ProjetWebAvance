@@ -5,7 +5,7 @@ Pour initialiser la base de données à partir du termimal, suivre les étapes s
 
 
 Pour l'initialisation Docker :
-    docker compose up
+    docker compose up -d
     docker build -t api8inf349 .
     docker run -p 5000:5000 --name mon_api api8inf349
     flask initialisation_bd (dans Docker)
