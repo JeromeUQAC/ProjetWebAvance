@@ -8,8 +8,12 @@ import click
 from flask import Flask, render_template, request, redirect, abort, make_response, jsonify
 from urllib.request import urlopen, Request
 from urllib.parse import urlencode
+import os
+import ast
+import redis
 
 database.connect()
+cache = redis.from_url(url=os.environ.get("REDIS_URL"))
 
 
 class Product:
@@ -108,11 +112,18 @@ def initialize_order(order_id):
             else:
                 error = make_response(validation["http_name"] + " (" + validation["code"] + ") : " + validation["name"])
                 abort(error)
-        command = "{order: {"
+        command = '{ "order": ['
+        compteur = 0
+        size = len(products)
+        print(f"size : {size}")
         for p in products:
-            command = command + "product: {id:" + str(p.id) + ", quantity:" + str(p.quantite) + "}, "
-        command = command + "}}"
-        print("command : " + str(command))
+            compteur = compteur + 1
+            command = command + '{"id": ' + str(p.id) + ' , "quantity": ' + str(p.quantite) + '}'
+            if compteur < size:
+                command = command + ","
+            else:
+                command = command + ']}'
+        command = json.loads(command)
         CommandDb.insert(
             command_id=order_id,
             command=command).execute()
@@ -153,32 +164,40 @@ def make_order(order_id):
 @app.route("/order/<int:order_id>/resume/", methods=['GET', 'POST'])
 def order_details(order_id):
     command_summary = None
-    if request.method == 'POST':
-        weightTot = 0
-        costTot = 0
-        order = CommandDb.get_or_none(CommandDb.command_id == order_id).command
-        if order:
-            print("order : " + str(order))
-            print("order type : " + str(type(order)))
+    command_return = []
+    command_string = None
+    command_for_cache = []
+    weight_tot = 0
+    cost_tot = 0
+    order_line = CommandDb.get_or_none(CommandDb.command_id == order_id)
+    command = order_line.command
+    # order_dict = json.loads(order)
+    if order_line:
+        if not order_line.command_paid:
+            print("order : " + str(command))
+            print("order type : " + str(type(command)))
             item = None
-            for p in order["order"]:
+            for p in command["order"]:
+                print(f"produit : {str(p)}")
                 pid = p["id"]
                 p_quantity = p["quantity"]
                 item = ProductDb.get_or_none(ProductDb.product_id == pid)
-
+                command_return.append((item.product_name, item.product_desc, p_quantity))
+                command_string = [{"name": item[0], "desc": item[1], "quantity": item[2]} for item in command_return]
                 if item:
-                    p_cost = prod.product_price
-                    costTot = costTot + p_cost
+                    p_cost = item.product_price * p_quantity
+                    cost_tot = cost_tot + p_cost
                     weight = item.product_weight * p_quantity
-                    weightTot = weightTot + weight
-
+                    weight_tot = weight_tot + weight
+            cost_tot = round(cost_tot, 2)
+            print(f"command_return : {command_return}")
             if item:
                 expedition_price = 0
-                if weightTot >= 2000:
+                if weight_tot >= 2000:
                     expedition_price = 25
-                elif 500 <= weightTot < 2000:
+                elif 500 <= weight_tot < 2000:
                     expedition_price = 10
-                elif weightTot < 500:
+                elif weight_tot < 500:
                     expedition_price = 5
                 card_info = request.form.to_dict()
                 print("Card info : " + str(card_info))
@@ -205,7 +224,7 @@ def order_details(order_id):
                             "cvv": input_cvv,
                             "expiration_month": input_exp_month
                         },
-                        "amount_charged": int(costTot + expedition_price)
+                        "amount_charged": int(cost_tot + expedition_price)
                     }
 
                     print(str(card_info_to_send))
@@ -213,16 +232,18 @@ def order_details(order_id):
                     headers = {"Content-Type": "application/json"}
                     response = requests.post(url, json=card_info_to_send, headers=headers).text
                     response_json = json.loads(response)
-                    print(str(response_json))
+                    print(f"reponse : {str(response_json)}")
                     order = CommandDb.get_or_none(order_id)
                     order.command_paid = True
                     order.command_amount_charged = response_json["transaction"]["amount_charged"]
                     order.command_transaction_id = response_json["transaction"]["id"]
                     order.command_transaction_success = response_json["transaction"]["success"]
                     order.save()
-
+                    print(f"command_string : {command_string}")
+                    print(f"command_string type : {type(command_string)}")
                     command_summary = {
                         "order": {
+                            "items": command_string,
                             "shipping_info": {
                                 "country": order.command_country,
                                 "address": order.command_address,
@@ -231,14 +252,8 @@ def order_details(order_id):
                                 "province": order.command_province
                             },
                             "email": order.command_email,
-                            "total_price": costTot,
+                            "total_price": cost_tot,
                             "paid": order.command_paid,
-                            "product": {
-                                "id": item.product_id,
-                                "name": item.product_name,
-                                "description": item.product_desc,
-                                "quantity": order.command_quantity
-                            },
                             "credit_card": {
                                 "name": response_json["credit_card"]["name"],
                                 "first_digits": response_json["credit_card"]["first_digits"],
@@ -255,11 +270,32 @@ def order_details(order_id):
                             "id": order_id
                         }
                     }
-                    print(str(command_summary))
+                    # command_summary["order"]["items"] = json.loads(command_json)
+                    print(f"command summary :{str(command_summary)}")
+                    command_for_cache = str(command_summary)
+                    cache.set(order_id, command_for_cache)
                 else:
                     error = make_response(validation["http_name"] + " (" + validation["code"] + ") : " + validation["name"])
                     abort(error)
+        else:
+            command_from_cache = ast.literal_eval(cache.get(order_id).decode('utf-8'))
+            return render_template("confirmation.html", command_summary=command_from_cache)
+    else:
+        error = make_response(404, "La commande recherchée n'existe pas")
+        abort(error)
     return render_template("confirmation.html", command_summary=command_summary)
+
+
+@app.route("/order/<int:order_id>/", methods=['GET'])
+def get_order(order_id):
+    order_line = CommandDb.get_or_none(CommandDb.command_id == order_id)
+    if order_line:
+        if order_line.command_paid:
+            command_from_cache = ast.literal_eval(cache.get(order_id).decode('utf-8'))
+            return render_template("confirmation.html", command_summary=command_from_cache)
+    else:
+        error = make_response(404, "La commande recherchée n'existe pas")
+        abort(error)
 
 
 database.close()

@@ -9,7 +9,7 @@ EXPOSE 5000
 
 ENV FLASK_DEBUG=True
 ENV FLASK_APP=app.py
-ENV REDIS_URL=redis://host.docker.internal
+ENV REDIS_URL="redis://host.docker.internal"
 ENV DB_HOST=host.docker.internal
 ENV DB_USER=postgres
 ENV DB_PASSWORD=postgres

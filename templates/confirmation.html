@@ -12,8 +12,10 @@
         <div id="div-page-resume">
             <label class = "labels-titre-categorie">Résumé</label>
             <div id = "div-infos-commande">
-                <label class = "labels-categorie">Aliment choisi : </label><label class = "labels-user">{{ command_summary.order.product.name }} ({{ command_summary.order.product.description }})</label>
-                <br><label class = "labels-categorie">Quantité : </label><label class = "labels-user">{{ command_summary.order.product.quantity }}</label>
+                <label class="labels-categorie">Aliments choisis :</label>
+                {% for product in command_summary['order']['items'] %}
+                    <label class = "labels-user">({{ product['quantity'] }}) {{ product['name'] }} : {{ product['desc'] }} </label><br>
+                {% endfor %}
             </div>
             <label class = "labels-titre-categorie">Shipping</label>
             <div id = "div-infos-shipping">
@@ -33,9 +35,9 @@
             </div>
             <label class = "labels-titre-categorie">Paiement</label>
             <div id = "div-infos-couts">
-               <label class = "labels-categorie">Total partiel (Sans shipping): </label><label class = "labels-user">{{ command_summary.order.total_price }}</label>
-               <br><label class = "labels-categorie">Coût du shipping: </label><label class = "labels-user">{{ command_summary.order.shipping_price}}</label>
-               <br><label class = "labels-categorie">Total (Avec shipping): </label><label class = "labels-user">{{ command_summary.order.transaction.amount_charged }}</label>
+               <label class = "labels-categorie">Total partiel (Sans shipping): </label><label class = "labels-user">{{ command_summary.order.total_price }}$</label>
+               <br><label class = "labels-categorie">Coût du shipping: </label><label class = "labels-user">{{ command_summary.order.shipping_price}}$</label>
+               <br><label class = "labels-categorie">Total (Avec shipping): </label><label class = "labels-user">{{ command_summary.order.transaction.amount_charged }}$</label>
             </div>
       </div>
     </div>

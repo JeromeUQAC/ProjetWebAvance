@@ -51,10 +51,10 @@ def validation_carte(nom, numero, exp_annee, exp_mois, cvv, order_id):
     regex_cvv = r'^\d{3}$'
     regex_annee = r'^\d{4}$'
     regex_mois = r'^\d{1,2}$'
-    if exp_annee == "":
-        exp_annee = 0
-    if exp_mois == "":
-        exp_mois = 0
+    # if not re.fullmatch(regex_annee, exp_annee):
+    #   exp_annee = 0
+    # if not re.fullmatch(regex_mois, exp_mois):
+    #    exp_mois = 0
     carte_ok = False
     date_ok = False
     nom_ok = False
@@ -71,7 +71,9 @@ def validation_carte(nom, numero, exp_annee, exp_mois, cvv, order_id):
 
     if re.fullmatch(regex_carte, numero):
         carte_ok = True
-    if exp_annee >= today.year and 13 > exp_mois >= today.month:
+    if exp_annee > today.year:
+        date_ok = True
+    elif exp_annee >= today.year and 13 > exp_mois >= today.month:
         date_ok = True
     if re.fullmatch(regex_cvv, cvv):
         cvv_ok = True
